@@ -1,16 +1,17 @@
-import express, { Express } from 'express';
-import { PrismaClient } from '@prisma/client';
+import express, {Express} from 'express';
+import {PrismaClient} from '@prisma/client';
 import bodyParser from 'body-parser';
-import authRouter from './routes/auth.router';
-import { errorMiddleware } from './middlewares/errors'
-import { SignupSchema } from './schema/users.schema';
+import authRoutes from './routes/custom/auth.routes';
+import itemRoutes from './routes/custom/item.routes';
+import {errorMiddleware} from './middlewares/errors'
 
 const app: Express = express();
 app.use(bodyParser.json());
 
-app.use('/api/auth', authRouter);
+app.use('/api/auth', authRoutes);
+app.use('/api/items', itemRoutes);
 
-export const prismaClient = new PrismaClient({
+export const prismaClient:PrismaClient = new PrismaClient({
     log: ["query"],
 });
 

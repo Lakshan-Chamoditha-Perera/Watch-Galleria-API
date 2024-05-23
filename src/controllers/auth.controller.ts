@@ -1,44 +1,21 @@
-import { Request, Response, NextFunction } from "express";
-import { prismaClient } from "../index";
-import { compareSync, hashSync } from "bcrypt";
-import { ErrorCodes, HttpException } from "../util/exceptions/HttpException";
-import * as jwt from "jsonwebtoken";
-import { UnprocessableEntity } from "../util/exceptions/ValidationException";
-import { SignupSchema } from "../schema/users.schema";
+import {NextFunction, Request, Response} from "express";
+import {UnprocessableEntity} from "../util/exceptions/ValidationException";
+import * as UserService from "../service/user.service";
+import {ErrorCodes, HttpException} from "../util/exceptions/HttpException";
+import {compareSync} from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Validate the request body using SignupSchema
-        SignupSchema.parse(req.body);
-
         const { email, password, name } = req.body;
+        const user = await UserService.createUser({email, password, name});
 
-        if (!email || !password || !name) {
-            return next(new HttpException("Please provide email, password, and name", ErrorCodes.INVALID_INPUT, 400, null));
-        }
-
-        let user = await prismaClient.user.findFirst({
-            where: { email }
-        });
-
-        if (user) {
-            return next(new HttpException("User already exists", ErrorCodes.USER_ALREADY_EXISTS, 400, null));
-        }
-
-        user = await prismaClient.user.create({
-            data: {
-                email,
-                password: hashSync(password, 10),
-                name
-            }
-        });
         res.status(201).send(user);
-
     } catch (error: any) {
         if (error.name === 'ZodError') {
             next(new UnprocessableEntity(error.errors, "Validation Error", ErrorCodes.VALIDATION_ERROR));
         } else {
-            next(new HttpException("Internal Server Error", ErrorCodes.SERVER_ERROR, 500, error));
+            next(new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error));
         }
     }
 }
@@ -51,9 +28,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     try {
-        const user = await prismaClient.user.findFirst({
-            where: { email }
-        });
+        const user = await UserService.getUserByEmail(email);
 
         if (!user) {
             return next(new HttpException("User not found", ErrorCodes.USER_NOT_FOUND, 404, null));
@@ -63,9 +38,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             return next(new HttpException("Incorrect password", ErrorCodes.INCORRECT_PASSWORD, 401, null));
         }
 
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string);
-        res.send({ user, token });
+        const token = jwt.sign({id: user.id}, process.env.JWT_SECRET as string, {expiresIn: '1h'});
 
+        res.send({ user, token });
     } catch (error) {
         next(new HttpException("Internal Server Error", ErrorCodes.SERVER_ERROR, 500, error));
     }
