@@ -22,26 +22,27 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
 
 export const login = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-        return next(new HttpException("Please provide email and password", ErrorCodes.INVALID_INPUT, 400, null));
-    }
-
     try {
-        const user = await UserService.getUserByEmail(email);
+        if (!email || !password) {
+            return next(new HttpException("Please provide email and password", ErrorCodes.INVALID_INPUT, 400, null));
+        }
 
+        const user = await UserService.getUserByEmail(email);
         if (!user) {
+            console.log("User not found");
             return next(new HttpException("User not found", ErrorCodes.USER_NOT_FOUND, 404, null));
         }
 
         if (!compareSync(password, user.password)) {
+            console.log("Incorrect password");
             return next(new HttpException("Incorrect password", ErrorCodes.INCORRECT_PASSWORD, 401, null));
         }
 
         const token = jwt.sign({id: user.id}, process.env.JWT_SECRET as string, {expiresIn: '1h'});
-
         res.send({ user, token });
-    } catch (error) {
-        next(new HttpException("Internal Server Error", ErrorCodes.SERVER_ERROR, 500, error));
+
+    } catch (error: any) {
+        console.log("Error in login: ", error);
+        next(new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error));
     }
 }

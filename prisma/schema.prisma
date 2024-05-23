@@ -13,7 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -21,5 +20,41 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  orders    Order[] // One-to-Many with Order
 }
 
+enum Model {
+  UNISEX
+  MALE
+  FEMALE
+}
+
+model Watch {
+  id           String   @id @default(cuid())
+  title        String
+  discription  String   @default("")
+  imageUrlList String[]
+  model        Model
+  price        Float
+  rating       Int?
+  quantity     Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  orders       Order[]  @relation("WatchToOrder") // Many-to-Many with Order
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id]) // Many-to-One with User
+  userId      String
+  watchesList Watch[]  @relation("WatchToOrder") // Many-to-Many with Watch
+  total       Float
+  status      Status
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Status {
+  PENDING
+  COMPLETED
+}
