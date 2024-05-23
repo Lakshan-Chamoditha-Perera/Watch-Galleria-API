@@ -1,40 +1,63 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { prismaClient } from "../index";
-import { hashSync } from "bcrypt";
+import { compareSync, hashSync } from "bcrypt";
+import { ErrorCodes, HttpException } from "../util/exceptions/HttpException";
+import * as jwt from "jsonwebtoken";
 
-export const register = async (req: Request, res: Response) => {
-    res.send("Register route");
-}
-
-export const login = async (req: Request, res: Response) => {
-    res.send("Login route");
-}
-
-export const signup = async (req: Request, res: Response) => {
+export const signup = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password, name } = req.body;
 
     if (!email || !password || !name) {
-        return res.status(400).send("Please provide email, password and name");
+        return next(new HttpException("Please provide email, password, and name", ErrorCodes.INVALID_INPUT, 400, null));
     }
 
-    let user = await prismaClient.user.findFirst({
-        where: {
-            email: email
-        }
-    });
+    try {
+        let user = await prismaClient.user.findFirst({
+            where: { email }
+        });
 
-    if (user) {
-        return res.status(400).send("User already exists");
+        if (user) {
+            return next(new HttpException("User already exists", ErrorCodes.USER_ALREADY_EXISTS, 400, null));
+        }
+
+        user = await prismaClient.user.create({
+            data: {
+                email,
+                password: hashSync(password, 10),
+                name
+            }
+        });
+
+        res.status(201).send(user);
+    } catch (error) {
+        next(new HttpException("Internal Server Error", ErrorCodes.SERVER_ERROR, 500, error));
+    }
+}
+
+export const login = async (req: Request, res: Response, next: NextFunction) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return next(new HttpException("Please provide email and password", ErrorCodes.INVALID_INPUT, 400, null));
     }
 
-    user = await prismaClient.user.create({
-        data: {
-            email: email,
-            password: hashSync(password, 10),
-            name: name
+    try {
+        const user = await prismaClient.user.findFirst({
+            where: { email }
+        });
+
+        if (!user) {
+            return next(new HttpException("User not found", ErrorCodes.USER_NOT_FOUND, 404, null));
         }
-    });
 
-    res.send(user);
+        if (!compareSync(password, user.password)) {
+            return next(new HttpException("Incorrect password", ErrorCodes.INCORRECT_PASSWORD, 401, null));
+        }
 
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+
+        res.send({ user, token });
+    } catch (error) {
+        next(new HttpException("Internal Server Error", ErrorCodes.SERVER_ERROR, 500, error));
+    }
 }
