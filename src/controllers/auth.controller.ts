@@ -3,15 +3,20 @@ import { prismaClient } from "../index";
 import { compareSync, hashSync } from "bcrypt";
 import { ErrorCodes, HttpException } from "../util/exceptions/HttpException";
 import * as jwt from "jsonwebtoken";
+import { UnprocessableEntity } from "../util/exceptions/ValidationException";
+import { SignupSchema } from "../schema/users.schema";
 
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
-    const { email, password, name } = req.body;
-
-    if (!email || !password || !name) {
-        return next(new HttpException("Please provide email, password, and name", ErrorCodes.INVALID_INPUT, 400, null));
-    }
-
     try {
+        // Validate the request body using SignupSchema
+        SignupSchema.parse(req.body);
+
+        const { email, password, name } = req.body;
+
+        if (!email || !password || !name) {
+            return next(new HttpException("Please provide email, password, and name", ErrorCodes.INVALID_INPUT, 400, null));
+        }
+
         let user = await prismaClient.user.findFirst({
             where: { email }
         });
@@ -27,10 +32,14 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
                 name
             }
         });
-
         res.status(201).send(user);
-    } catch (error) {
-        next(new HttpException("Internal Server Error", ErrorCodes.SERVER_ERROR, 500, error));
+
+    } catch (error: any) {
+        if (error.name === 'ZodError') {
+            next(new UnprocessableEntity(error.errors, "Validation Error", ErrorCodes.VALIDATION_ERROR));
+        } else {
+            next(new HttpException("Internal Server Error", ErrorCodes.SERVER_ERROR, 500, error));
+        }
     }
 }
 
@@ -54,9 +63,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             return next(new HttpException("Incorrect password", ErrorCodes.INCORRECT_PASSWORD, 401, null));
         }
 
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
-
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string);
         res.send({ user, token });
+
     } catch (error) {
         next(new HttpException("Internal Server Error", ErrorCodes.SERVER_ERROR, 500, error));
     }

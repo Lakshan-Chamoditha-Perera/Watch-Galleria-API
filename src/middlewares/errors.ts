@@ -7,7 +7,7 @@ export const errorMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    console.error("Error middleware : "+error.message);
+    console.error("Error handling middleware {} "+error.message);
     res.status(error.statusCode || 500).json({
         message: error.message,
         code: error.errorCode,
