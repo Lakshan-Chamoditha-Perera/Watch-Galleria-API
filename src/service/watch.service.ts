@@ -29,3 +29,33 @@ export const getAll = async ()=> {
         throw new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error);
     }
 }
+
+export const findById = async (id:string)=> {
+    console.log("WatchService : findById() {} :")
+    try {
+        return prismaClient.watch.findUnique({
+            where: {id}
+        })
+    } catch (error: any) {
+        throw new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error);
+    }
+}
+
+//write updateWatch method
+
+export const updateWatch = async (id: string, watchDto: any): Promise<Watch> => {
+    console.log("WatchService : updateWatch() {} :")
+    try {
+        WatchSchema.partial().parse(watchDto); // Validate partial data
+        return await prismaClient.watch.update({
+            where: { id },
+            data: watchDto
+        });
+    } catch (error: any) {
+        if (error.name === 'ZodError') {
+            throw new UnprocessableEntity(error.errors, "Validation Error", ErrorCodes.VALIDATION_ERROR);
+        } else {
+            throw new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error);
+        }
+    }
+};
