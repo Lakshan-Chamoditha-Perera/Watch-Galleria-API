@@ -8,7 +8,10 @@ export const saveWatch = async (watchDto:any) => {
     console.log("WatchService : saveWatch() {} :")
     try {
         WatchSchema.parse(watchDto);
-        return prismaClient.watch.create(watchDto);
+        console.log(watchDto)
+        return await prismaClient.watch.create({
+            data: watchDto
+        });
      } catch (error: any) {
         if (error.name === 'ZodError') {
             throw new UnprocessableEntity(error.errors, "Validation Error", ErrorCodes.VALIDATION_ERROR);
