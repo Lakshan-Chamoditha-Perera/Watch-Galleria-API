@@ -1,7 +1,9 @@
 import {NextFunction, Request, Response} from 'express';
 import {UnprocessableEntity} from "../util/exceptions/ValidationException";
 import {ErrorCodes, HttpException} from "../util/exceptions/HttpException";
-import {saveWatch} from "../service/watch.service";
+import {getAll, saveWatch} from "../service/watch.service";
+import {Watch} from "@prisma/client";
+import {StandardResponse} from "../util/payloads/StandardResponse";
 
 export const createItem = async (req: Request, res: Response, next: NextFunction) => {
     console.log('WatchController : createItem() {} :');
@@ -10,10 +12,10 @@ export const createItem = async (req: Request, res: Response, next: NextFunction
             title, description, price, model, rating, quantity, imageUrlList,
         } = req.body;
 
-        let response = await saveWatch({
+        let watch: Watch = await saveWatch({
             title, description, price, model, rating, quantity, imageUrlList,
         });
-        res.status(201).send({ message: "Watch created successfully",response });
+        res.status(201).send(new StandardResponse(201, "Watch created successfully", watch));
     } catch (error: any) {
         if (error.name === 'ZodError') {
             next(new UnprocessableEntity(error.errors, "Validation Error", ErrorCodes.VALIDATION_ERROR));
@@ -25,8 +27,12 @@ export const createItem = async (req: Request, res: Response, next: NextFunction
 
 export const getItems = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        console.log('WatchController : getItems() {} :');
+
+        let watchItems = await getAll();
+        res.status(200).send(new StandardResponse(200, "Watch items retrieved successfully.", watchItems));
 
     } catch (error: any) {
-        next(error)
+        next(new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error));
     }
 }
