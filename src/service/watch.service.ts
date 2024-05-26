@@ -8,6 +8,7 @@ export const saveWatch = async (watchDto:any) => {
     console.log("WatchService : saveWatch() {} :")
     try {
         WatchSchema.parse(watchDto);
+
         console.log(watchDto)
         return await prismaClient.watch.create({
             data: watchDto

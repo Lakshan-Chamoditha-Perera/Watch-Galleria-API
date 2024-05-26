@@ -32,7 +32,7 @@ enum Model {
 model Watch {
   id           String   @id @default(cuid())
   title        String
-  discription  String   @default("")
+  description  String   @default("")
   imageUrlList String[]
   model        Model
   price        Float
