@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
-import { prismaClient } from "../index";
+import { UserModel } from "../schema/users.schema";
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     const token = req.header("Authorization")?.replace("Bearer ", "");
@@ -10,10 +10,8 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     }
 
     try {
-        const payload: { userId: string } = verify(token, process.env.JWT_SECRET as string) as { userId: string };
-        const user = await prismaClient.user.findFirst({
-            where: { id: payload.userId }
-        });
+        const payload: { email: string } = verify(token, process.env.JWT_SECRET as string) as { email: string };
+        const user = await UserModel.findOne({ email: payload.email });
 
         if (!user) {
             return res.status(401).send("User not found");

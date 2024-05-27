@@ -1,9 +1,8 @@
-import {NextFunction, Request, Response} from 'express';
-import {UnprocessableEntity} from "../util/exceptions/ValidationException";
-import {ErrorCodes, HttpException} from "../util/exceptions/HttpException";
-import {findById, getAll, saveWatch, updateWatch} from "../service/watch.service";
-import {Watch} from "@prisma/client";
-import {StandardResponse} from "../util/payloads/StandardResponse";
+import { NextFunction, Request, Response } from 'express';
+import { UnprocessableEntity } from "../util/exceptions/ValidationException";
+import { ErrorCodes, HttpException } from "../util/exceptions/HttpException";
+import { findById, getAll, saveWatch, updateWatch } from "../service/watch.service";
+import { StandardResponse } from "../util/payloads/StandardResponse";
 
 export const createItem = async (req: Request, res: Response, next: NextFunction) => {
     console.log('WatchController : createItem() {} :');
@@ -12,7 +11,7 @@ export const createItem = async (req: Request, res: Response, next: NextFunction
             title, description, price, model, rating, quantity, imageUrlList,
         } = req.body;
 
-        let watch: Watch = await saveWatch({
+        let watch = await saveWatch({
             title, description, price, model, rating, quantity, imageUrlList,
         });
         res.status(201).send(new StandardResponse(201, "Watch created successfully", watch));
