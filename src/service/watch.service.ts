@@ -1,15 +1,19 @@
 import { WatchSchema, WatchModel } from "../schema/watch.schema";
+import {uploadImage} from "./firebase.service";
 import { UnprocessableEntity } from "../util/exceptions/ValidationException";
 import { ErrorCodes, HttpException } from "../util/exceptions/HttpException";
 
-export const saveWatch = async (watchDto: any) => {
-    console.log("WatchService : saveWatch() {} :")
+export const saveWatch = async (watchDto:any,images:any) => {
+    console.log("WatchService : saveWatch() {} : watchDto : ",watchDto+" images : "+images)
     try {
         WatchSchema.parse(watchDto);
-
-
-        WatchModel.create(watchDto);
-
+        console.log('validated..........')
+        for (let i = 0; i < images.length; i++) {
+            const imageUrl = await uploadImage(images[i]);
+            console.log(imageUrl)
+            watchDto.imageUrlList.push(imageUrl);
+        }
+        return WatchModel.create(watchDto);
     } catch (error: any) {
         if (error.name === 'ZodError') {
             throw new UnprocessableEntity(error.errors, "Validation Error", ErrorCodes.VALIDATION_ERROR);
