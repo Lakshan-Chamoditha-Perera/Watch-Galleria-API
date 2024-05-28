@@ -2,8 +2,9 @@ import { WatchSchema, WatchModel } from "../schema/watch.schema";
 import {uploadImage} from "./firebase.service";
 import { UnprocessableEntity } from "../util/exceptions/ValidationException";
 import { ErrorCodes, HttpException } from "../util/exceptions/HttpException";
+import {WatchDto} from "../dto/watch.dto";
 
-export const saveWatch = async (watchDto:any,images:any) => {
+export const saveWatch = async (watchDto:WatchDto,images:any) => {
     console.log("WatchService : saveWatch() {} : watchDto : ",watchDto+" images : "+images)
     try {
         WatchSchema.parse(watchDto);

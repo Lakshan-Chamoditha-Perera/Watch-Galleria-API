@@ -2,7 +2,7 @@ import {getDownloadURL, ref, storage, uploadBytes} from '../config/firebase.conf
 
 export const uploadImage = async (file: any): Promise<string> => {
     console.log("FirebaseService : uploadImage {}");
-    const storageRef = ref(storage, `/${Date.now()}_${file}`);
+    const storageRef = ref(storage, `/${Date.now()}_${file.name}`);
     const metadata = {
         contentType: file.mimetype,
     };
