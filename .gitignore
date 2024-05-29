@@ -59,3 +59,5 @@ build/
 # Windows
 Thumbs.db
 ehthumbs.db
+
+script.sh

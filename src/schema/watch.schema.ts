@@ -27,5 +27,4 @@ export const watchMongooseSchema = new mongoose.Schema({
     imageUrlList: { type: [String] },
 });
 
-// Create Mongoose model
 export const WatchModel = mongoose.model('Watch', watchMongooseSchema);
