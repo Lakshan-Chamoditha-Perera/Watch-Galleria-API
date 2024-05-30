@@ -9,9 +9,9 @@ export const saveWatch = async (watchDto: WatchDto, images: any[]) => {
     try {
         WatchSchema.parse(watchDto);
         console.log('validated..........');
-         watchDto.imageUrlList = watchDto.imageUrlList || [];
+        watchDto.imageUrlList = watchDto.imageUrlList || [];
 
-         for (let i = 0; i < images.length; i++) {
+        for (let i = 0; i < images.length; i++) {
             try {
                 const imageUrl = await uploadImage(images[i]);
                 watchDto.imageUrlList.push(imageUrl);
@@ -50,7 +50,7 @@ export const findByItemCode = async (itemCode: string) => {
         const watch = await WatchModel.findOne({ itemCode: itemCode });
         return watch ? watch.toObject() as WatchDto : null;
     } catch (error: any) {
-        throw new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error);
+        throw error;
     }
 }
 
@@ -72,5 +72,22 @@ export const updateWatch = async (id: string, watchDto: WatchDto) => {
         } else {
             throw new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error);
         }
+    }
+};
+
+export const deleteWatch = async (itemCode: string) => {
+    console.log("WatchService: deleteWatch() {} :");
+    try {
+        const result = await WatchModel.deleteOne({ itemCode: itemCode });
+        if (result.deletedCount === 0) {
+            console.log(`No watch found with itemCode: ${itemCode}`);
+            throw new Error(`No watch found with itemCode: ${itemCode}`);
+        }
+        console.log(`Successfully deleted watch with itemCode: ${itemCode}`);
+        return { success: true, message: 'Watch successfully deleted.' };
+
+    } catch (error) {
+        console.error(`Error deleting watch with itemCode: ${itemCode}`, error);
+        throw error
     }
 };

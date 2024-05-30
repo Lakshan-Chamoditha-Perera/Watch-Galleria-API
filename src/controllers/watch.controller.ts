@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { UnprocessableEntity } from "../util/exceptions/ValidationException";
 import { ErrorCodes, HttpException } from "../util/exceptions/HttpException";
-import { findByItemCode, getAll, saveWatch, updateWatch } from "../service/watch.service";
+import { findByItemCode, getAll, saveWatch, updateWatch,deleteWatch } from "../service/watch.service";
 import { StandardResponse } from "../util/payloads/StandardResponse";
 import { WatchDto } from "../dto/watch.dto";
 
@@ -67,3 +67,14 @@ export const findWatchById = async (req: Request, res: Response) => {
         // next(new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error));
     }
 };
+
+export const deleteItem = async (req: Request, res: Response) => {
+    try {
+        console.log('WatchController : deleteWatch() {} :');
+        let itemCode = req.params.itemCode;
+        let deletedWatch = await deleteWatch(itemCode);
+        res.status(200).send(new StandardResponse(200, "Watch item deleted successfully.", deletedWatch));
+    } catch (error: any) {
+        res.status(500).send(new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error));
+    }
+}

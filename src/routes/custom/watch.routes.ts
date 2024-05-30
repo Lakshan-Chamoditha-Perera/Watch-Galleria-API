@@ -9,5 +9,6 @@ const upload = multer({ storage: storage });
 watchRoutes.post("/", upload.any(), WatchController.createItem);
 watchRoutes.get("/", WatchController.getItems);
 watchRoutes.get("/:id", WatchController.findWatchById);
+watchRoutes.delete("/:itemCode", WatchController.deleteItem);
 
 export default watchRoutes;
