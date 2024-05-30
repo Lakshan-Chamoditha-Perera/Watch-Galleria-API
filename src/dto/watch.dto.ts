@@ -1,17 +1,43 @@
+export enum Category {
+    LUXURY = "LUXURY",
+    SPORT = "SPORT",
+    CASUAL = "CASUAL",
+    SMART = "SMART"
+}
+
+export enum Gender {
+    UNISEX = "UNISEX",
+    MALE = "MALE",
+    FEMALE = "FEMALE"
+}
 
 export class WatchDto {
+    _id?: any;
     itemCode: string;
-    productName: string;
-    description: string;
+    productName?: string;
+    description?: string;
     category: Category;
     price: number;
     quantity: number;
-    rating: number;
+    rating?: number;
     productDate: Date;
     gender: Gender;
-    imageUrlList: string[];
+    imageUrlList?: string[];
 
-    constructor(itemCode: string, productName: string, description: string, category: Category, price: number, quantity: number, rating: number, productDate: Date, gender: Gender, imageUrlList: string[]) {
+    constructor(
+        _id: any,
+        itemCode: string,
+        category: Category,
+        price: number,
+        quantity: number,
+        productDate: Date,
+        gender: Gender,
+        productName?: string,
+        description?: string,
+        rating?: number,
+        imageUrlList?: string[]
+    ) {
+        this._id = _id;
         this.itemCode = itemCode;
         this.productName = productName;
         this.description = description;
@@ -23,16 +49,4 @@ export class WatchDto {
         this.gender = gender;
         this.imageUrlList = imageUrlList;
     }
-
-}
-
-export enum Category {
-    LUXURY = "LUXURY",
-    SPORT = "SPORT",
-    CASUAL = "CASUAL",
-    SMART = "SMART"
-}
-
-export enum Gender {
-    UNISEX, MALE,FEMALE
 }

@@ -4,12 +4,8 @@ import multer from 'multer';
 import dotenv from "dotenv";
 import mongoose from 'mongoose';
 import cors from 'cors';
+import rootRouter from './routes/routes';
 
-import authRoutes from './routes/custom/auth.routes';
-import watchRoutes from './routes/custom/watch.routes';
-import userRoutes from "./routes/custom/user.routes";
-
-import { authMiddleware } from "./middlewares/auth.middleware";
 dotenv.config();
 
 const app: Express = express();
@@ -17,9 +13,7 @@ const app: Express = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-app.use('/api/auth', authRoutes);
-app.use('/api/watch',  watchRoutes);
-app.use('/api/user', userRoutes);
+app.use('/api',rootRouter);
 
 const url = process.env.DATABASE_URI||"";
 mongoose.connect(url)

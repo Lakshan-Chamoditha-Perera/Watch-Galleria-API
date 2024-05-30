@@ -1,37 +1,30 @@
-import {z} from 'zod';
+import { z } from 'zod';
 import mongoose from 'mongoose';
 
-
-const OrderSchema = z.object({
-    userId: z.string({ message: "User ID is required" }),
-    items: z.array(
-        z.object({
-            watchId: z.string({ message: "Watch ID is required" }),
-            quantity: z.number().int().positive({ message: "Quantity must be a positive integer" }),
-        })
-    ),
+// Zod schema for order validation
+export const OrderSchema = z.object({
+    userEmail: z.string({ message: "User email is required" }),
+    itemsList: z.object({}).optional(),
     totalPrice: z.number().positive({ message: "Total price must be a positive number" }),
-    status: z.enum(["PENDING", "SHIPPED", "DELIVERED", "CANCELLED"]).default("PENDING"),
+    status: z.enum(["CART", "COMPLETED"]).default("COMPLETED"),
     createdAt: z.date().default(new Date()),
     updatedAt: z.date().default(new Date()),
 });
 
-// Convert Zod schema to Mongoose schema
+// Mongoose schema for Order
 const orderMongooseSchema = new mongoose.Schema({
-    userEmail: { required: true },
-    items: [
+    userEmail: { type: String, required: true },
+    itemList: [
         {
-            watchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Watch', required: true },
-            quantity: { type: Number, required: true, min: 1 },
+            itemCode: { type: mongoose.Schema.Types.String, ref: 'Watch', required: true },
+            quantity: { type: Number, required: true, min: 1 }
         },
     ],
     totalPrice: { type: Number, required: true, min: 0 },
-    status: { type: String, enum: ["CART", "COMPLETED"], default: "CART" },
+    status: { type: String, enum: ["CART", "COMPLETED"], default: "COMPLETED" },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });
 
 // Create Mongoose model
-const Order = mongoose.model('Order', orderMongooseSchema);
-
-module.exports = { Order };
+export const OrderModel = mongoose.model('Order', orderMongooseSchema);

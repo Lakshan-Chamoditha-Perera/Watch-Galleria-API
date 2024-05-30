@@ -1,21 +1,31 @@
 import { WatchSchema, WatchModel } from "../schema/watch.schema";
-import {uploadImage} from "./firebase.service";
+import { uploadImage } from "./firebase.service";
 import { UnprocessableEntity } from "../util/exceptions/ValidationException";
 import { ErrorCodes, HttpException } from "../util/exceptions/HttpException";
-import {WatchDto} from "../dto/watch.dto";
+import { WatchDto } from "../dto/watch.dto";
 
-export const saveWatch = async (watchDto:WatchDto,images:any) => {
-    console.log("WatchService : saveWatch() {} : watchDto : ",watchDto+" images : "+images)
+export const saveWatch = async (watchDto: WatchDto, images: any[]) => {
+    console.log("WatchService: saveWatch() {} : watchDto:", watchDto, "images:", images);
     try {
         WatchSchema.parse(watchDto);
-        console.log('validated..........')
-        for (let i = 0; i < images.length; i++) {
-            const imageUrl = await uploadImage(images[i]);
-            console.log(imageUrl)
-            watchDto.imageUrlList.push(imageUrl);
+        console.log('validated..........');
+         watchDto.imageUrlList = watchDto.imageUrlList || [];
+
+         for (let i = 0; i < images.length; i++) {
+            try {
+                const imageUrl = await uploadImage(images[i]);
+                watchDto.imageUrlList.push(imageUrl);
+            } catch (imageError) {
+                console.error('Error uploading image:', images[i], imageError);
+                throw new HttpException('Error uploading image', ErrorCodes.SERVER_ERROR, 500, imageError);
+            }
         }
-        return WatchModel.create(watchDto);
+
+        const newWatch = await WatchModel.create(watchDto);
+        console.log('Watch saved:', newWatch);
+        return newWatch;
     } catch (error: any) {
+        console.log(error);
         if (error.name === 'ZodError') {
             throw new UnprocessableEntity(error.errors, "Validation Error", ErrorCodes.VALIDATION_ERROR);
         } else {
@@ -23,6 +33,7 @@ export const saveWatch = async (watchDto:WatchDto,images:any) => {
         }
     }
 };
+
 
 export const getAll = async () => {
     console.log("WatchService : getWatchItems() {} :")
@@ -33,22 +44,28 @@ export const getAll = async () => {
     }
 }
 
-export const findById = async (id: string) => {
-    console.log("WatchService : findById() {} :")
+export const findByItemCode = async (itemCode: string) => {
+    console.log("WatchService : findByItemCode() {} :")
     try {
-        return WatchModel.findById(id);
+        const watch = await WatchModel.findOne({ itemCode: itemCode });
+        return watch ? watch.toObject() as WatchDto : null;
     } catch (error: any) {
         throw new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error);
     }
 }
 
-//write updateWatch method
-
-export const updateWatch = async (id: string, watchDto: any) => {
-    console.log("WatchService : updateWatch() {} :")
+export const updateWatch = async (id: string, watchDto: WatchDto) => {
+    console.log("WatchService: updateWatch() {} :");
     try {
-        WatchSchema.partial().parse(watchDto); // Validate partial data
-        return null;
+        // Validate the watchDto against the WatchSchema
+        WatchSchema.parse(watchDto);
+
+        const updatedWatch = await WatchModel.findByIdAndUpdate(id, watchDto, { new: true });
+        if (!updatedWatch) {
+            throw new HttpException("Watch not found", ErrorCodes.WATCH_NOT_FOUND, 404, null);
+        }
+
+        return updatedWatch;
     } catch (error: any) {
         if (error.name === 'ZodError') {
             throw new UnprocessableEntity(error.errors, "Validation Error", ErrorCodes.VALIDATION_ERROR);

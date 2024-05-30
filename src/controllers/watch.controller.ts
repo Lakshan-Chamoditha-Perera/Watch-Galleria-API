@@ -1,13 +1,22 @@
-import {Request, Response} from 'express';
-import {UnprocessableEntity} from "../util/exceptions/ValidationException";
-import {ErrorCodes, HttpException} from "../util/exceptions/HttpException";
-import {findById, getAll, saveWatch, updateWatch} from "../service/watch.service";
-import {StandardResponse} from "../util/payloads/StandardResponse";
-import {WatchDto} from "../dto/watch.dto";
+import { Request, Response } from 'express';
+import { UnprocessableEntity } from "../util/exceptions/ValidationException";
+import { ErrorCodes, HttpException } from "../util/exceptions/HttpException";
+import { findByItemCode, getAll, saveWatch, updateWatch } from "../service/watch.service";
+import { StandardResponse } from "../util/payloads/StandardResponse";
+import { WatchDto } from "../dto/watch.dto";
 
 export const createItem = async (req: Request, res: Response,) => {
     console.log('WatchController : createItem() {} :');
     try {
+        
+        let files: any[] = [];
+        if (req.files) {
+            if (Array.isArray(req.files)) {
+                files = req.files;
+            } else {
+                files = Object.values(req.files).flat();
+            }
+        }
         let watch: WatchDto = {
             itemCode: req.body.itemCode,
             productName: req.body.productName,
@@ -24,7 +33,7 @@ export const createItem = async (req: Request, res: Response,) => {
         if (!req.files) {
             throw new UnprocessableEntity([], "Images are required", ErrorCodes.VALIDATION_ERROR);
         }
-        let isSaved = await saveWatch(watch, req.files);
+        let isSaved = await saveWatch(watch, files);
         res.status(201).send(new StandardResponse(201, "Watch created successfully", isSaved));
     } catch (error: any) {
         if (error.name === 'ZodError') {
@@ -52,31 +61,9 @@ export const findWatchById = async (req: Request, res: Response) => {
     try {
         console.log('WatchController : findById() {} :');
         let id = req.params.id;
-        let watch = await findById(id);
+        let watch = await findByItemCode(id);
         res.status(200).send(new StandardResponse(200, "Watch item retrieved successfully.", watch));
     } catch (error: any) {
         // next(new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error));
     }
-}
-
-export const updateWatchById = async (req: Request, res: Response,) => {
-    console.log('WatchController : updateWatchById() {} :');
-    try {
-        const id = req.params.id;
-        const {title, description, price, model, rating, quantity, imageUrlList} = req.body;
-
-        const updatedWatch = await updateWatch(id, {title, description, price, model, rating, quantity, imageUrlList});
-
-        if (!updatedWatch) {
-            // return next(new HttpException("Watch not found", ErrorCodes.USER_NOT_FOUND, 404, null));
-        }
-
-        res.status(200).send(new StandardResponse(200, "Watch updated successfully", updatedWatch));
-    } catch (error: any) {
-        if (error.name === 'ZodError') {
-            // next(new UnprocessableEntity(error.errors, "Validation Error", ErrorCodes.VALIDATION_ERROR));
-        } else {
-            // next(new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error));
-        }
-    }
-}
+};
