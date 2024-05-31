@@ -13,9 +13,9 @@ const app: Express = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-app.use('/api',rootRouter);
+app.use('/api', rootRouter);
 
-const url = process.env.DATABASE_URI||"";
+const url = process.env.DATABASE_URI || "";
 mongoose.connect(url)
     .then(() => {
         console.log('Connected to the database ')

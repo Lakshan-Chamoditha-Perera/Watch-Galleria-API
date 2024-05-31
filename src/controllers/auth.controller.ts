@@ -44,11 +44,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         if (accessToken) {
             const payload = jwt.decode(accessToken);
             if (!payload) {
-                return res.status(400).send(new StandardResponse(400, "Validation Error", new HttpException("Invalid token", ErrorCodes.INVALID_INPUT, 400, null)));
+                return res.status(200).send(new StandardResponse(400, "Invalid token", null));
             }
             const user = await UserService.getUserByEmail((payload as any).email);
             if (!user) {
-                return res.status(404).send(new StandardResponse(404, "User not found", new HttpException("User not found", ErrorCodes.USER_NOT_FOUND, 404, null)));
+                return res.status(200).send(new StandardResponse(404, "User not registered", null));
             }
             const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET as string, { expiresIn: '30d' });
             console.log(user)
