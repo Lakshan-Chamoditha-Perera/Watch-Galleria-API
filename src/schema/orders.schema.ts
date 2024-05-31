@@ -17,7 +17,9 @@ const orderMongooseSchema = new mongoose.Schema({
     itemList: [
         {
             itemCode: { type: mongoose.Schema.Types.String, ref: 'Watch', required: true },
-            quantity: { type: Number, required: true, min: 1 }
+            quantity: { type: Number, required: true, min: 1 },
+            price: { type: Number, required: true, min: 0 },
+            image: { type: String },
         },
     ],
     totalPrice: { type: Number, required: true, min: 0 },

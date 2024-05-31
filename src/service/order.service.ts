@@ -42,3 +42,17 @@ export const saveOrder = async (orderDto: any) => {
         }
     }
 };
+
+export const findOrdersByEmail = async (email: string) => {
+    console.log("OrderService: getOrdersByEmail() {} : email :", email);
+    try {
+        const orders = await OrderModel.find({ userEmail: email });
+        console.log("Orders fetched:", orders);
+        return orders;
+    }
+    catch (error: any) {
+        console.log(error);
+        throw error;
+    }
+};
+
