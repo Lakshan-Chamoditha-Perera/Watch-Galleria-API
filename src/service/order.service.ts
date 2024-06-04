@@ -30,15 +30,12 @@ export const saveOrder = async (orderDto: any) => {
                     await updateWatch(item._id, updatedItem);
 
                     totalPrice += element.price * element.quantity;
-
                 }
-
             }
         }
 
         orderDto.totalPrice = totalPrice;
-        
-
+    
         const newOrder = await OrderModel.create(orderDto);
         console.log("Order saved:", newOrder);
         return newOrder;

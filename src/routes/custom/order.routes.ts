@@ -5,6 +5,5 @@ const orderRoutes: Router = Router();
 
 orderRoutes.post("/", OrderController.createOrder);
 orderRoutes.get("/:email", OrderController.getOrdersByEmail);
-orderRoutes.post("/checkout", OrderController.createCheckoutSession);
 
 export default orderRoutes;
