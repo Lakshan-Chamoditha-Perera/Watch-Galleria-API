@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 import { UnprocessableEntity } from "../util/exceptions/ValidationException";
 import { ErrorCodes, HttpException } from "../util/exceptions/HttpException";
-import { findByItemCode, getAll, saveWatch, updateWatch,deleteWatch } from "../service/watch.service";
+import { findByItemCode, getAll, saveWatch, updateWatch, deleteWatch } from "../service/watch.service";
 import { StandardResponse } from "../util/payloads/StandardResponse";
 import { WatchDto } from "../dto/watch.dto";
 
 export const createItem = async (req: Request, res: Response,) => {
     console.log('WatchController : createItem() {} :');
     try {
-        
+
         let files: any[] = [];
         if (req.files) {
             if (Array.isArray(req.files)) {

@@ -9,5 +9,6 @@ const upload = multer({ storage: storage });
 
 userRoutes.get("/:email", UserController.getUserByEmail);
 userRoutes.post("/profile_image/:email",upload.any(), UserController.profileImageChange);
+userRoutes.put("/:email", UserController.updateProfile);
 
 export default userRoutes;

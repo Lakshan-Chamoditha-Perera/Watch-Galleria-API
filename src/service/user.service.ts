@@ -2,6 +2,7 @@ import {hashSync} from "bcrypt";
 import {ErrorCodes, HttpException} from "../util/exceptions/HttpException";
 import {SignupSchema,LoginSchema,UserModel} from "../schema/users.schema";
 import {uploadImage} from "./firebase.service";
+import { Error } from "mongoose";
 
 export const getUserByEmail = async (email: string)=> {
     console.log("UserService : getUserByEmail {} email : " + email)
@@ -56,4 +57,39 @@ export const profileImageChange = async (email: string, profileImage:any) => {
         // If an error occurs, throw an exception
         throw new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error);
     }
+};
+
+
+export const updateUser = async (email: string, userDto: any) => {
+    console.log("UserService : updateUser {} email : " + email)
+    console.log("UserService : updateUser {} userDto : " + JSON.stringify(userDto))
+    try {
+        // Find the user by email
+        const user = await UserModel.findOne({ email });
+
+        if (!user) {
+            throw new Error("User not found");
+        }
+        
+        if (userDto.name) user.name = userDto.name;
+        if (userDto.email) user.email = userDto.email;
+        if (userDto.photoURL) user.photoURL = userDto.photoURL;
+        if (userDto.role) user.role = userDto.role;
+
+        // Handle the address update safely
+        if (userDto.address) {
+            user.address = user.address || {}; // Ensure user.address is defined
+            if (userDto.address.postalCode) user.address.postalCode = userDto.address.postalCode;
+            if (userDto.address.city) user.address.city = userDto.address.city;
+            if (userDto.address.residentialAddress) user.address.residentialAddress = userDto.address.residentialAddress;
+        }
+
+        if (userDto.mobileNumber) user.mobileNumber = userDto.mobileNumber;
+
+        await user.save();
+        return user;
+    } catch (error: any) {
+        console.log("Error updating user: " + error.message);
+        throw error;
+     }
 };

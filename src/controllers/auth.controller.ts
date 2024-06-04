@@ -5,7 +5,6 @@ import { ErrorCodes, HttpException } from "../util/exceptions/HttpException";
 import { compareSync } from "bcrypt";
 import jwt from "jsonwebtoken";
 import { StandardResponse } from "../util/payloads/StandardResponse";
-
 export const signup = async (req: Request, res: Response) => {
     console.log("AuthController : signup")
     try {
@@ -17,7 +16,13 @@ export const signup = async (req: Request, res: Response) => {
                 password,
                 name,
                 photoURL,
-                role: "USER"
+                role: "USER",
+                mobileNumber: "",
+                address: {
+                    postalCode: "",
+                    city: "",
+                    residentialAddress: ""
+                }
             });
         res.status(201).send(user);
     } catch (error: any) {
@@ -30,9 +35,7 @@ export const signup = async (req: Request, res: Response) => {
             res.status(500).json(new StandardResponse(500, serverError.message, serverError));
         }
     }
-
 }
-
 export const login = async (req: Request, res: Response, next: NextFunction) => {
     console.log("AuthController : login")
     const { email, password, accessToken } = req.body;

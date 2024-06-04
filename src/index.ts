@@ -7,7 +7,6 @@ import cors from 'cors';
 import rootRouter from './routes/routes';
 
 dotenv.config();
-
 const app: Express = express();
 
 app.use(bodyParser.json());

@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 export const OrderSchema = z.object({
     userEmail: z.string({ message: "User email is required" }),
     itemsList: z.object({}).optional(),
-    totalPrice: z.number().positive({ message: "Total price must be a positive number" }),
+    totalPrice: z.number().optional(),
     status: z.enum(["CART", "COMPLETED"]).default("COMPLETED"),
     createdAt: z.date().default(new Date()),
     updatedAt: z.date().default(new Date()),

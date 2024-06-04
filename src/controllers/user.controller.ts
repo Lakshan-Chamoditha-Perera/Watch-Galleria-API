@@ -38,3 +38,21 @@ export const profileImageChange = async (req: Request, res: Response) => {
 
     res.status(200).send(new StandardResponse(200, "User Updated", user));
 };
+
+export const updateProfile = async (req: Request, res: Response) => {
+   try{
+    const email = req.params.email;
+    console.log("UserController : updateProfile {} email : " + email)
+    const user = await UserService.updateUser(email, req.body);
+    if (!user) {
+        console.log("User not found");
+        res.send(new StandardResponse(404, "User not found", new HttpException("User not found", ErrorCodes.USER_NOT_FOUND, 404, null)))
+        return;
+    }
+    res.send(new StandardResponse(200, "User updated", user));
+   }catch(error: any){
+       console.log("Server Error : " + error.message)
+       res.status(500).send(new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error));
+   }
+}
+ 
