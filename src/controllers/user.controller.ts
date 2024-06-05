@@ -9,7 +9,7 @@ export const getUserByEmail = async (req: Request, res: Response) => {
     const user = await UserService.getUserByEmail(email);
     if (!user) {
         console.log("User not found");
-        res.send(new StandardResponse(404, "User not found", new HttpException("User not found", ErrorCodes.USER_NOT_FOUND, 404, null)))
+        res.send(404).send("User not found");
         return;
     }
     res.send(new StandardResponse(200, "User exists", user));
@@ -20,7 +20,7 @@ export const profileImageChange = async (req: Request, res: Response) => {
     const email = req.params.email;
     if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
         console.log("No files uploaded");
-        res.status(400).send(new StandardResponse(400, "No files uploaded", null));
+        res.status(400).send("No files uploaded");
         return;
     }
 
@@ -32,27 +32,26 @@ export const profileImageChange = async (req: Request, res: Response) => {
 
     if (!user) {
         console.log("User not found");
-        res.status(404).send(new StandardResponse(404, "User not found", new HttpException("User not found", ErrorCodes.USER_NOT_FOUND, 404, null)));
+        res.status(404).send("User not found");
         return;
     }
 
-    res.status(200).send(new StandardResponse(200, "User Updated", user));
+    res.status(200).send(user);
 };
 
 export const updateProfile = async (req: Request, res: Response) => {
-   try{
-    const email = req.params.email;
-    console.log("UserController : updateProfile {} email : " + email)
-    const user = await UserService.updateUser(email, req.body);
-    if (!user) {
-        console.log("User not found");
-        res.send(new StandardResponse(404, "User not found", new HttpException("User not found", ErrorCodes.USER_NOT_FOUND, 404, null)))
-        return;
+    try {
+        const email = req.params.email;
+        console.log("UserController : updateProfile {} email : " + email)
+        const user = await UserService.updateUser(email, req.body);
+        if (!user) {
+            console.log("User not found");
+            res.status(404).send("User not found");
+            return;
+        }
+        res.status(200).send(user);
+    } catch (error: any) {
+        console.log("Server Error : " + error.message)
+        res.status(500).send(error);
     }
-    res.send(new StandardResponse(200, "User updated", user));
-   }catch(error: any){
-       console.log("Server Error : " + error.message)
-       res.status(500).send(new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error));
-   }
 }
- 

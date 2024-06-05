@@ -7,11 +7,11 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 
     try {
         const order = req.body;
-        const lineItems = order.cart.map((storeItem: { 
-            itemCode: string; 
-            imageUrlList: []; 
-            price: number; 
-            quantity: number ;
+        const lineItems = order.cart.map((storeItem: {
+            itemCode: string;
+            imageUrlList: [];
+            price: number;
+            quantity: number;
             addToCartQuantity: number;
             description: string;
 

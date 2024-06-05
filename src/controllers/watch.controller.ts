@@ -34,17 +34,11 @@ export const createItem = async (req: Request, res: Response,) => {
             throw new UnprocessableEntity([], "Images are required", ErrorCodes.VALIDATION_ERROR);
         }
         let isSaved = await saveWatch(watch, files);
-        res.status(201).send(new StandardResponse(201, "Watch created successfully", isSaved));
+        res.status(201).send(isSaved);
     } catch (error: any) {
-        if (error.name === 'ZodError') {
-            console.log('ZodError')
-            res.status(422).send(new UnprocessableEntity(error.errors, "Validation Error", ErrorCodes.VALIDATION_ERROR));
-        } else {
-            console.log('Server Error : ' + error.message)
-            res.status(500).send(new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error));
-        }
+        console.log('Server Error : ' + error.message)
+        res.status(500).send(error);
     }
-    console.log("---------------------------------------")
 }
 
 export const getItems = async (req: Request, res: Response) => {
@@ -64,7 +58,7 @@ export const findWatchById = async (req: Request, res: Response) => {
         let watch = await findByItemCode(id);
         res.status(200).send(new StandardResponse(200, "Watch item retrieved successfully.", watch));
     } catch (error: any) {
-        // next(new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error));
+        res.status(500).send(error);
     }
 };
 
@@ -73,8 +67,8 @@ export const deleteItem = async (req: Request, res: Response) => {
         console.log('WatchController : deleteWatch() {} :');
         let itemCode = req.params.itemCode;
         let deletedWatch = await deleteWatch(itemCode);
-        res.status(200).send(new StandardResponse(200, "Watch item deleted successfully.", deletedWatch));
+        res.status(200).send(deletedWatch);
     } catch (error: any) {
-        res.status(500).send(new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error));
+        res.status(500).send(error);
     }
 }
