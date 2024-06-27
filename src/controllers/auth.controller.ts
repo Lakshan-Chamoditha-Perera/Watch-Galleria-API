@@ -36,49 +36,48 @@ export const signup = async (req: Request, res: Response) => {
         }
     }
 }
+
 export const login = async (req: Request, res: Response, next: NextFunction) => {
-    console.log("AuthController : login")
+    console.log("AuthController : login");
     const { email, password, accessToken } = req.body;
     console.log("Email: ", email, "Password: ", password, "token: ", accessToken);
 
     try {
-
-        // If accessToken is provided, then it is a social login
+        // Social login
         if (accessToken) {
             const payload = jwt.decode(accessToken);
             if (!payload) {
-                return res.status(200).send(new StandardResponse(400, "Invalid token", null));
+                return res.status(400).json(new StandardResponse(400, "Invalid token", null));
             }
             const user = await UserService.getUserByEmail((payload as any).email);
             if (!user) {
-                return res.status(200).send(new StandardResponse(404, "User not registered", null));
+                return res.status(404).json(new StandardResponse(404, "User not registered", null));
             }
             const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET as string, { expiresIn: '30d' });
-            console.log(user)
-            return res.status(200).send(new StandardResponse(200, "Login successful", { user, token }));
+            console.log(user);
+            return res.status(200).json(new StandardResponse(200, "Login successful", { user, token }));
         }
 
-
-        // If email and password are provided, then it is a normal login
+        // Standard login
         if (!email || !password) {
-            return res.status(400).send(new StandardResponse(400, "Validation Error", new HttpException("Please provide email and password", ErrorCodes.INVALID_INPUT, 400, null)));
+            return res.status(200).json(new StandardResponse(400, "Email and password are required", null));
         }
 
         const user = await UserService.getUserByEmail(email);
         if (!user) {
             console.log("User not found");
-            return res.status(404).send(new StandardResponse(404, "User not found", new HttpException("User not found", ErrorCodes.USER_NOT_FOUND, 404, null)));
+            return res.status(200).json(new StandardResponse(404, "User not found", null));
         }
 
         if (!compareSync(password, user.password)) {
             console.log("Incorrect password");
-            return res.status(401).send(new StandardResponse(401, "Incorrect password", new HttpException("Incorrect password", ErrorCodes.INCORRECT_PASSWORD, 401, null)));
+            return res.status(200).json(new StandardResponse(401, "Incorrect password", null));
         }
 
         const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET as string, { expiresIn: '30d' });
-        return res.status(200).send(new StandardResponse(200, "Login successful", { user, token }));
+        return res.status(200).json(new StandardResponse(200, "Login successful", { user, token }));
     } catch (error: any) {
-        console.log("Error in login: ", error);
-        return res.status(500).send(new StandardResponse(500, "Internal Server Error", new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error)));
+        console.error("Error in login: ", error);
+        return res.status(500).json(new StandardResponse(500, "Internal Server Error", new HttpException(error.message, ErrorCodes.SERVER_ERROR, 500, error)));
     }
 }

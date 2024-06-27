@@ -3,6 +3,8 @@ import { verify } from "jsonwebtoken";
 import { UserModel } from "../schema/users.schema";
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+    console.log("AuthMiddleware : authMiddleware() {} :");
+
     const token = req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
